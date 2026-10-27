@@ -134,7 +134,7 @@ public class Flight extends JFrame implements ActionListener{
             String time = txtTime.getText().trim();
             String price = txtPrice.getText().trim();
               
-            if (!id.isEmpty() && !dep.isEmpty() && !arr.isEmpty()) {
+            if (!id.isEmpty() && !dep.isEmpty() && !arr.isEmpty() && !time.isEmpty() && !price.isEmpty()) {
                 tableModel.addRow(new Object[]{id, dep, arr, time, price});
                 txtFlightId.setText(""); 
                 txtDeparture.setText(""); 
@@ -142,7 +142,7 @@ public class Flight extends JFrame implements ActionListener{
                 txtTime.setText(""); 
                 txtPrice.setText("");
             } else {
-                JOptionPane.showMessageDialog(this, "Please fill in Flight ID, Departure, and Arrival.");
+                JOptionPane.showMessageDialog(this, "Please fill in Flight ID, Departure, Arrival, Time, and Price.");
             }
             
     
