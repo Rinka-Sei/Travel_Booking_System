@@ -42,23 +42,23 @@ public class Flight extends JFrame implements ActionListener{
         flightsPanel.add(lblFlightId);
         
         txtFlightId = new JTextField();
-        txtFlightId.setBounds(75, 20, 80, 25);
+        txtFlightId.setBounds(75, 20, 100, 25);
         flightsPanel.add(txtFlightId);
         
         lblDeparture = new JLabel("Departure:");
-        lblDeparture.setBounds(175, 20, 70, 25);
+        lblDeparture.setBounds(195, 20, 70, 25);
         flightsPanel.add(lblDeparture);
 
         txtDeparture = new JTextField();
-        txtDeparture.setBounds(245, 20, 140, 25);
+        txtDeparture.setBounds(270, 20, 120, 25);
         flightsPanel.add(txtDeparture);
 
         lblArrival = new JLabel("Arrival:");
-        lblArrival.setBounds(405, 20, 60, 25);
+        lblArrival.setBounds(415, 20, 60, 25);
         flightsPanel.add(lblArrival);
 
         txtArrival = new JTextField();
-        txtArrival.setBounds(455, 20, 140, 25);
+        txtArrival.setBounds(465, 20, 120, 25);
         flightsPanel.add(txtArrival);
 
         lblTime = new JLabel("Time (HHMM):");
@@ -66,15 +66,15 @@ public class Flight extends JFrame implements ActionListener{
         flightsPanel.add(lblTime);
 
         txtTime = new JTextField();
-        txtTime.setBounds(105, 55, 50, 25);
+        txtTime.setBounds(105, 55, 100, 25);
         flightsPanel.add(txtTime);
 
         lblPrice = new JLabel("Price:");
-        lblPrice.setBounds(175, 55, 50, 25);
+        lblPrice.setBounds(215, 55, 50, 25);
         flightsPanel.add(lblPrice);
 
         txtPrice = new JTextField();
-        txtPrice.setBounds(245, 55, 140, 25);
+        txtPrice.setBounds(270, 55, 120, 25);
         flightsPanel.add(txtPrice);
         
         btnAddFlight = new JButton("Add Flight");
@@ -82,7 +82,7 @@ public class Flight extends JFrame implements ActionListener{
         flightsPanel.add(btnAddFlight);
 
         btnLoad = new JButton("Load (BST Sorted)");
-        btnLoad.setBounds(525, 55, 150, 25);
+        btnLoad.setBounds(335, 95, 150, 25);
         flightsPanel.add(btnLoad);
         
         lblSearch = new JLabel("Search Destination:");
