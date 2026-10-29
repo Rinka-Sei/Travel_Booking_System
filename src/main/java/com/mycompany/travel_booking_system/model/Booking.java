@@ -83,7 +83,7 @@ public class Booking extends JFrame{
         tabbedPane.addTab("Package Deals (Quick Sort)", new JPanel());
         tabbedPane.addTab("Bookings & Itinerary", bookingsPanel);
         add(tabbedPane);
-        
+        //fix user contribution
         tabbedPane.setSelectedIndex(3);
         }
 }
