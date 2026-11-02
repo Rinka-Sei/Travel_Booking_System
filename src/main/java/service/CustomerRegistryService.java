@@ -130,8 +130,14 @@ public class CustomerRegistryService {
         return customerHashTable;
     }
 
-    private void cacheUser(User user) {
-        if (customerHashTable == null || putMethod == null) {
+    /**
+     * Manually inserts a user into the in-memory reflection cache.
+     * Enables isolated testing of the reflected cache without requiring database access.
+     *
+     * @param user the user to cache
+     */
+    public void cacheUser(User user) {
+        if (user == null || customerHashTable == null || putMethod == null) {
             return;
         }
         try {
@@ -141,8 +147,14 @@ public class CustomerRegistryService {
         }
     }
 
-    private User getCachedUser(String username) {
-        if (customerHashTable == null || getMethod == null) {
+    /**
+     * Retrieves a user directly from the in-memory reflection cache without touching the database.
+     *
+     * @param username the username to look up
+     * @return the cached {@link User}, or {@code null} if absent or reflection is unavailable
+     */
+    public User getCachedUser(String username) {
+        if (username == null || customerHashTable == null || getMethod == null) {
             return null;
         }
         try {

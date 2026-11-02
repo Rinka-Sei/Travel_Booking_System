@@ -4,6 +4,22 @@ All notable changes, milestones, refactoring phases, and documentation updates f
 
 ---
 
+## [2026-11-03] - Service and GUI Reflection Decoupling Unit Tests
+
+### Added
+- **`FlightCatalogServiceTest.java`:** Added JUnit 5 unit tests verifying that in-memory flight lists are sorted chronologically via reflected `ds.FlightBST`.
+- **`CustomerRegistryServiceTest.java`:** Added JUnit 5 unit tests verifying user caching and retrieval via reflected `ds.CustomerHashTable`.
+- **`PackagePanelReflectionTest.java`:** Added JUnit 5 unit tests exercising `PackagePanel` reflection integration with `ds.PackageQuickSort` for price and rating sorting.
+- **`FlightPanelReflectionTest.java`:** Added JUnit 5 unit tests exercising `FlightPanel` reflection integration with `ds.FlightBST`.
+
+### Changed
+- **`FlightCatalogService.java`:** Added `sortFlightsWithBST(List<Flight>)` to decouple reflection execution from JDBC and enable direct unit testing.
+- **`CustomerRegistryService.java`:** Exposed `cacheUser(User)` and `getCachedUser(String)` methods to enable direct unit testing of reflected hash table caching without active database connectivity.
+- **`PackagePanel.java`:** Extracted static `sortPackagesWithReflection(List<PackageDeal>, String, boolean)` to enable direct unit testing of QuickSort reflection.
+- **`FlightPanel.java`:** Extracted static `sortFlightsWithReflection(List<Flight>)` to enable direct unit testing of FlightBST reflection.
+
+---
+
 ## [2026-11-03] - Item 9 Compliance Audit and Refactor
 
 ### Added
