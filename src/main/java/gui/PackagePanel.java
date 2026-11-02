@@ -203,28 +203,13 @@ public class PackagePanel extends JPanel implements ActionListener {
             return;
         }
         try {
-            Class<?> quickSortClass;
-            try {
-                quickSortClass = Class.forName("ds.PackageQuickSort");
-            } catch (ClassNotFoundException ex) {
-                quickSortClass = Class.forName("ds.QuickSort");
-            }
+            Class<?> quickSortClass = Class.forName("ds.PackageQuickSort");
             if ("PRICE".equals(mode)) {
-                try {
-                    Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class, boolean.class);
-                    sortPriceMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
-                } catch (NoSuchMethodException e) {
-                    Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class);
-                    sortPriceMethod.invoke(null, packages, 0, packages.size() - 1);
-                }
+                Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class, boolean.class);
+                sortPriceMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
             } else if ("RATING".equals(mode)) {
-                try {
-                    Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class, boolean.class);
-                    sortRatingMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
-                } catch (NoSuchMethodException e) {
-                    Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class);
-                    sortRatingMethod.invoke(null, packages, 0, packages.size() - 1);
-                }
+                Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class, boolean.class);
+                sortRatingMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
             }
         } catch (Exception ignored) {}
     }

@@ -2,6 +2,10 @@
 
 This document dictates the required structure and content formatting for the `README.md` and `CHANGELOG.md` files. Any LLM or AI Agent completing a feature must generate or update these files according to these templates.
 
+[![View Api Docs](https://img.shields.io/badge/View-Interactive%20Guide-blue?style=for-the-badge)](https://rinka-sei.github.io/dsa_travel_booking_system)
+
+Hosted interactive API documentation and architectural guide: [https://rinka-sei.github.io/dsa_travel_booking_system](https://rinka-sei.github.io/dsa_travel_booking_system)
+
 ---
 
 ## 1. `README.md` Template

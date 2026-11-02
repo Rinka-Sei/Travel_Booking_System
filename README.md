@@ -32,9 +32,7 @@ dsa_travel_booking_system/
 │   │   ├── ds/
 │   │   │   ├── CustomerHashTable.java
 │   │   │   ├── FlightBST.java
-│   │   │   ├── PackageQuickSort.java
-│   │   │   ├── UserHashTable.java       # Compatibility alias
-│   │   │   └── QuickSort.java           # Compatibility alias
+│   │   │   └── PackageQuickSort.java
 │   │   ├── gui/
 │   │   │   ├── LoginFrame.java
 │   │   │   ├── MainFrame.java
