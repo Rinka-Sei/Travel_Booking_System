@@ -1,26 +1,23 @@
 package service;
 
 import database.DBConnection;
-import ds.FlightBST;
 import model.Flight;
 
+import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service layer coordinating Flight operations between MySQL database and the {@link FlightBST} data structure.
+ * Service layer coordinating Flight operations between MySQL database and the {@code ds.FlightBST} data structure.
  * Mirrors the {@code MovieCatalog} service architecture from the starter project blueprint.
  */
 public class FlightCatalogService {
-
-    private final FlightBST flightBST;
 
     /**
      * Constructs a FlightCatalogService and initializes its backing BST.
      */
     public FlightCatalogService() {
-        this.flightBST = new FlightBST();
     }
 
     /**
@@ -44,7 +41,7 @@ public class FlightCatalogService {
             ps.setDouble(6, flight.getPrice());
             ps.executeUpdate();
         }
-        flightBST.insert(flight);
+        insertIntoFlightBst(flight);
     }
 
     /**
@@ -86,13 +83,25 @@ public class FlightCatalogService {
     }
 
     /**
-     * Loads all flight records from the database ordered chronologically via {@link FlightBST}.
+     * Loads all flight records from the database ordered chronologically via
+     * the optional {@code ds.FlightBST} implementation.
      *
      * @return a list of flights sorted chronologically by military departure time
      * @throws SQLException if a database access error occurs
      */
     public List<Flight> getSortedFlightsBST() throws SQLException {
-        FlightBST bst = new FlightBST();
+        Object bst = createFlightBst();
+        if (bst == null) {
+            return loadFlightsFromDatabase();
+        }
+        Method insertMethod;
+        Method sortedMethod;
+        try {
+            insertMethod = method(bst, "insert", Flight.class);
+            sortedMethod = method(bst, "getSortedFlights");
+        } catch (IllegalStateException ex) {
+            return loadFlightsFromDatabase();
+        }
         String sql = "SELECT * FROM flights";
         try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -106,10 +115,20 @@ public class FlightCatalogService {
                         rs.getString("arrival_time"),
                         rs.getDouble("price")
                 );
-                bst.insert(f);
+                try {
+                    insertMethod.invoke(bst, f);
+                } catch (ReflectiveOperationException ex) {
+                    return loadFlightsFromDatabase();
+                }
             }
         }
-        return bst.getSortedFlights();
+        try {
+            @SuppressWarnings("unchecked")
+            List<Flight> sorted = (List<Flight>) sortedMethod.invoke(bst);
+            return sorted;
+        } catch (ReflectiveOperationException ex) {
+            return loadFlightsFromDatabase();
+        }
     }
 
     /**
@@ -142,5 +161,52 @@ public class FlightCatalogService {
             }
         }
         return list;
+    }
+
+    private void insertIntoFlightBst(Flight flight) {
+        Object bst = createFlightBst();
+        if (bst == null) {
+            return;
+        }
+        try {
+            method(bst, "insert", Flight.class).invoke(bst, flight);
+        } catch (ReflectiveOperationException | IllegalStateException ignored) {
+            // JDBC remains the source of truth when the optional DSA is unavailable.
+        }
+    }
+
+    private Object createFlightBst() {
+        try {
+            return Class.forName("ds.FlightBST").getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException ex) {
+            return null;
+        }
+    }
+
+    private Method method(Object target, String name, Class<?>... parameterTypes) {
+        try {
+            return target.getClass().getMethod(name, parameterTypes);
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException("Flight BST method unavailable: " + name, ex);
+        }
+    }
+
+    private List<Flight> loadFlightsFromDatabase() throws SQLException {
+        List<Flight> flights = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM flights")) {
+            while (rs.next()) {
+                flights.add(new Flight(
+                        rs.getString("flight_id"),
+                        rs.getString("departure"),
+                        rs.getString("departure_time"),
+                        rs.getString("arrival"),
+                        rs.getString("arrival_time"),
+                        rs.getDouble("price")
+                ));
+            }
+        }
+        return flights;
     }
 }

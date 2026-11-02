@@ -1,10 +1,8 @@
 package service;
 
 import database.DBConnection;
-import ds.BookingPriorityQueue;
 import model.Booking;
 import model.Hotel;
-import model.PackageDeal;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service layer coordinating Hotel CRUD, Booking transactions, report generation, and {@link BookingPriorityQueue}.
+ * Service layer coordinating hotel CRUD, booking transactions, and report generation.
  * Mirrors the {@code RentalService} service architecture from the starter project blueprint.
  */
 public class BookingManagementService {
@@ -140,7 +138,7 @@ public class BookingManagementService {
         return list;
     }
 
-    // ==================== BOOKINGS & PRIORITY QUEUE ====================
+    // ==================== BOOKINGS ====================
 
     /**
      * Creates a new booking in the database.
@@ -207,23 +205,6 @@ public class BookingManagementService {
             }
         }
         return list;
-    }
-
-    /**
-     * Loads bookings into a {@link BookingPriorityQueue} ordered by highest total price.
-     *
-     * @param currentUser logged-in username
-     * @param isAdmin     whether the caller has admin rights
-     * @return priority queue containing the loaded bookings
-     * @throws SQLException on database error
-     */
-    public BookingPriorityQueue getBookingsPriorityQueue(String currentUser, boolean isAdmin) throws SQLException {
-        BookingPriorityQueue queue = new BookingPriorityQueue();
-        List<Booking> bookings = getBookings(currentUser, isAdmin);
-        for (Booking b : bookings) {
-            queue.addBooking(b);
-        }
-        return queue;
     }
 
     // ==================== ADMINISTRATIVE REPORT GENERATION ====================

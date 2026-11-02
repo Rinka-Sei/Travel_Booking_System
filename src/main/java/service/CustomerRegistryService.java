@@ -1,26 +1,41 @@
 package service;
 
 import database.DBConnection;
-import ds.UserHashTable;
 import model.User;
 
+import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service layer coordinating User and Customer registration, authentication, and caching via {@link UserHashTable}.
+ * Service layer coordinating User and Customer registration, authentication, and caching via {@code ds.UserHashTable}.
  * Mirrors the {@code CustomerRegistry} service architecture from the starter project blueprint.
  */
 public class CustomerRegistryService {
 
-    private final UserHashTable userHashTable;
+    private final Object customerHashTable;
+    private final Method putMethod;
+    private final Method getMethod;
 
     /**
      * Constructs CustomerRegistryService with an initial hash table cache capacity.
      */
     public CustomerRegistryService() {
-        this.userHashTable = new UserHashTable(50);
+        Object table = null;
+        Method put = null;
+        Method get = null;
+        try {
+            Class<?> tableClass = Class.forName("ds.CustomerHashTable");
+            table = tableClass.getDeclaredConstructor(int.class).newInstance(50);
+            put = tableClass.getMethod("put", String.class, User.class);
+            get = tableClass.getMethod("get", String.class);
+        } catch (ReflectiveOperationException ignored) {
+            // JDBC remains the source of truth when the optional DSA is unavailable.
+        }
+        customerHashTable = table;
+        putMethod = put;
+        getMethod = get;
     }
 
     /**
@@ -35,7 +50,7 @@ public class CustomerRegistryService {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 User u = new User(rs.getString("username"), rs.getString("password"), rs.getString("role"));
-                userHashTable.put(u.getUsername(), u);
+                cacheUser(u);
             }
         }
     }
@@ -49,7 +64,7 @@ public class CustomerRegistryService {
      * @throws SQLException if a database access error occurs
      */
     public User authenticate(String username, String password) throws SQLException {
-        User u = userHashTable.get(username);
+        User u = getCachedUser(username);
         if (u == null) {
             String sql = "SELECT * FROM users WHERE username = ?";
             try (Connection conn = DBConnection.getConnection();
@@ -58,7 +73,7 @@ public class CustomerRegistryService {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         u = new User(rs.getString("username"), rs.getString("password"), rs.getString("role"));
-                        userHashTable.put(u.getUsername(), u);
+                        cacheUser(u);
                     }
                 }
             }
@@ -84,7 +99,7 @@ public class CustomerRegistryService {
             ps.setString(2, password);
             ps.executeUpdate();
         }
-        userHashTable.put(username, new User(username, password, "CUSTOMER"));
+        cacheUser(new User(username, password, "CUSTOMER"));
     }
 
     /**
@@ -107,11 +122,33 @@ public class CustomerRegistryService {
     }
 
     /**
-     * Gets the backing hash table cache.
+     * Gets the backing customer hash table cache when available.
      *
-     * @return {@link UserHashTable} cache instance
+     * @return reflected customer hash table instance, or {@code null}
      */
-    public UserHashTable getUserHashTable() {
-        return userHashTable;
+    public Object getCustomerHashTable() {
+        return customerHashTable;
+    }
+
+    private void cacheUser(User user) {
+        if (customerHashTable == null || putMethod == null) {
+            return;
+        }
+        try {
+            putMethod.invoke(customerHashTable, user.getUsername(), user);
+        } catch (ReflectiveOperationException ignored) {
+            // A failed cache write does not invalidate the persisted user.
+        }
+    }
+
+    private User getCachedUser(String username) {
+        if (customerHashTable == null || getMethod == null) {
+            return null;
+        }
+        try {
+            return (User) getMethod.invoke(customerHashTable, username);
+        } catch (ReflectiveOperationException ignored) {
+            return null;
+        }
     }
 }

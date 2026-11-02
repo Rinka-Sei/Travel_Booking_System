@@ -4,6 +4,24 @@ All notable changes, milestones, refactoring phases, and documentation updates f
 
 ---
 
+## [2026-11-03] - Item 9 Compliance Audit and Refactor
+
+### Added
+- **`CustomerHashTable.java`:** Added the canonical Item 9 separate-chaining customer hash table API.
+- **`PackageQuickSort.java`:** Added the canonical Item 9 hand-written package sorting API with price and rating direction toggles.
+- **Booking Update Workflow:** Added `Update Selected` with booking row auto-fill and recalculated totals.
+- **JUnit 5 Tests:** Added focused tests for customer hash-table CRUD/collisions and package QuickSort ordering.
+
+### Changed
+- **Service Reflection:** Updated flight and customer services to use reflection for optional DSA integration with JDBC fallback behavior.
+- **Compatibility:** Retained `UserHashTable` and `QuickSort` as compatibility aliases for existing callers.
+- **`pom.xml`:** Added the required Java 21 compiler, Surefire, and Exec Maven plugin configuration.
+- **Database Seeding:** Removed the forbidden operational sample-data script so only the admin seed remains.
+- **Documentation:** Updated `README.md` to reflect the authoritative Item 9 architecture and live-seeding rule.
+
+### Fixed
+- **`QuickSort.sortHotelsByPrice(...)`:** Replaced the unfinished `UnsupportedOperationException` stub with a working sort implementation.
+
 ## [2026-10-30] - Master Prompt Blueprint Refinement & Multi-Project LLM Generation Guide
 
 ### Added

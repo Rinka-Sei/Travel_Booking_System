@@ -18,6 +18,7 @@ public class BookingPanel extends JPanel implements ActionListener {
     private JTextField txtBookFlightId;
     private JTextField txtBookHotelId;
     private JButton btnBook;
+    private JButton btnUpdate;
     private JButton btnItinerary;
     private JButton btnInvoice;
     private JButton btnReport;
@@ -57,30 +58,42 @@ public class BookingPanel extends JPanel implements ActionListener {
         btnBook.addActionListener(this);
         add(btnBook);
 
+        btnUpdate = new JButton("Update Selected");
+        btnUpdate.setBounds(445, 10, 120, 25);
+        btnUpdate.addActionListener(this);
+        add(btnUpdate);
+
         btnItinerary = new JButton("View Itinerary");
-        btnItinerary.setBounds(450, 10, 125, 25);
+        btnItinerary.setBounds(575, 10, 120, 25);
         btnItinerary.addActionListener(this);
         add(btnItinerary);
 
         btnInvoice = new JButton("Invoice");
-        btnInvoice.setBounds(585, 10, 90, 25);
+        btnInvoice.setBounds(705, 10, 75, 25);
         btnInvoice.addActionListener(this);
         add(btnInvoice);
 
         btnReport = new JButton("Report");
-        btnReport.setBounds(685, 10, 90, 25);
+        btnReport.setBounds(785, 10, 90, 25);
         btnReport.addActionListener(this);
         add(btnReport);
 
         btnCancel = new JButton("Cancel");
-        btnCancel.setBounds(785, 10, 90, 25);
+        btnCancel.setBounds(10, 45, 90, 25);
         btnCancel.addActionListener(this);
         add(btnCancel);
 
         bookingModel = new DefaultTableModel(new String[]{"Booking ID", "Customer", "Flight ID", "Hotel ID", "Total Price"}, 0);
         tblBookings = new JTable(bookingModel);
+        tblBookings.getSelectionModel().addListSelectionListener(event -> {
+            if (!event.getValueIsAdjusting() && tblBookings.getSelectedRow() != -1) {
+                int row = tblBookings.getSelectedRow();
+                setFieldValue(txtBookFlightId, bookingModel.getValueAt(row, 2));
+                setFieldValue(txtBookHotelId, bookingModel.getValueAt(row, 3));
+            }
+        });
         JScrollPane sp = new JScrollPane(tblBookings);
-        sp.setBounds(10, 45, 875, 520);
+        sp.setBounds(10, 75, 875, 490);
         add(sp);
 
         loadBookings();
@@ -95,6 +108,8 @@ public class BookingPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnBook) {
             performBooking();
+        } else if (e.getSource() == btnUpdate) {
+            updateSelectedBooking();
         } else if (e.getSource() == btnItinerary) {
             generateItinerary();
         } else if (e.getSource() == btnInvoice) {
@@ -208,6 +223,82 @@ public class BookingPanel extends JPanel implements ActionListener {
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Error loading bookings: " + ex.getMessage());
         }
+    }
+
+    /**
+     * Updates the selected booking and recalculates its total from current
+     * flight and hotel prices.
+     */
+    private void updateSelectedBooking() {
+        int selectedRow = tblBookings.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a booking to update.");
+            return;
+        }
+
+        String flightId = txtBookFlightId.getText().trim();
+        String hotelId = txtBookHotelId.getText().trim();
+        if (flightId.isEmpty() && hotelId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "A booking must contain a flight or hotel.");
+            return;
+        }
+
+        try (Connection conn = DBConnection.getConnection()) {
+            int bookingId = Integer.parseInt(bookingModel.getValueAt(selectedRow, 0).toString());
+            double total = calculateBookingTotal(conn, flightId, hotelId);
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE bookings SET flight_id = ?, hotel_id = ?, total_price = ? WHERE booking_id = ?")) {
+                ps.setString(1, flightId.isEmpty() ? null : flightId);
+                ps.setString(2, hotelId.isEmpty() ? null : hotelId);
+                ps.setDouble(3, total);
+                ps.setInt(4, bookingId);
+                ps.executeUpdate();
+            }
+            loadBookings();
+            JOptionPane.showMessageDialog(this, "Booking updated successfully.");
+        } catch (SQLException | NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Error updating booking: " + ex.getMessage());
+        }
+    }
+
+    private double calculateBookingTotal(Connection conn, String flightId, String hotelId) throws SQLException {
+        double total = 0;
+        String arrival = null;
+        String location = null;
+        if (!flightId.isEmpty()) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT arrival, price FROM flights WHERE flight_id = ?")) {
+                ps.setString(1, flightId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new SQLException("Flight ID '" + flightId + "' was not found.");
+                    }
+                    arrival = rs.getString("arrival");
+                    total += rs.getDouble("price");
+                }
+            }
+        }
+        if (!hotelId.isEmpty()) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT location, price_per_night FROM hotels WHERE hotel_id = ?")) {
+                ps.setString(1, hotelId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new SQLException("Hotel ID '" + hotelId + "' was not found.");
+                    }
+                    location = rs.getString("location");
+                    total += rs.getDouble("price_per_night");
+                }
+            }
+        }
+        if (arrival != null && location != null && !PackageDeal.isDestinationMatch(arrival, location)) {
+            throw new SQLException("Flight arrival and hotel location do not match.");
+        }
+        return total;
+    }
+
+    private void setFieldValue(JTextField field, Object value) {
+        field.setText(value == null ? "" : value.toString());
     }
 
     /**

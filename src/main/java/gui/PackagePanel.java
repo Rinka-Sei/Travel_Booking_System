@@ -191,7 +191,7 @@ public class PackagePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Loads package deals and sorts them using {@code ds.QuickSort} via reflection.
+     * Loads package deals and sorts them using {@code ds.PackageQuickSort} via reflection.
      *
      * @param mode      the sorting criterion ("PRICE" or "RATING")
      * @param ascending {@code true} for ascending order, {@code false} for descending order
@@ -201,7 +201,12 @@ public class PackagePanel extends JPanel implements ActionListener {
         List<PackageDeal> packages = fetchAllPackages();
 
         try {
-            Class<?> quickSortClass = Class.forName("ds.QuickSort");
+            Class<?> quickSortClass;
+            try {
+                quickSortClass = Class.forName("ds.PackageQuickSort");
+            } catch (ClassNotFoundException ex) {
+                quickSortClass = Class.forName("ds.QuickSort");
+            }
             if (!packages.isEmpty()) {
                 if ("PRICE".equals(mode)) {
                     try {
