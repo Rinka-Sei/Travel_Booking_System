@@ -89,46 +89,46 @@ public class FlightCatalogService {
      * @return a list of flights sorted chronologically by military departure time
      * @throws SQLException if a database access error occurs
      */
-    public List<Flight> getSortedFlightsBST() throws SQLException {
+    /**
+     * Sorts an in-memory collection of flights chronologically by departure time using
+     * {@code ds.FlightBST} via Java Reflection, or returns the original list if the BST is unavailable.
+     * This method enables decoupled unit testing without database dependency.
+     *
+     * @param flights the list of flights to sort
+     * @return a sorted list of flights
+     */
+    public List<Flight> sortFlightsWithBST(List<Flight> flights) {
+        if (flights == null || flights.isEmpty()) {
+            return flights != null ? new ArrayList<>(flights) : new ArrayList<>();
+        }
         Object bst = createFlightBst();
         if (bst == null) {
-            return loadFlightsFromDatabase();
+            return new ArrayList<>(flights);
         }
-        Method insertMethod;
-        Method sortedMethod;
         try {
-            insertMethod = method(bst, "insert", Flight.class);
-            sortedMethod = method(bst, "getSortedFlights");
-        } catch (IllegalStateException ex) {
-            return loadFlightsFromDatabase();
-        }
-        String sql = "SELECT * FROM flights";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                Flight f = new Flight(
-                        rs.getString("flight_id"),
-                        rs.getString("departure"),
-                        rs.getString("departure_time"),
-                        rs.getString("arrival"),
-                        rs.getString("arrival_time"),
-                        rs.getDouble("price")
-                );
-                try {
-                    insertMethod.invoke(bst, f);
-                } catch (ReflectiveOperationException ex) {
-                    return loadFlightsFromDatabase();
-                }
+            Method insertMethod = method(bst, "insert", Flight.class);
+            Method sortedMethod = method(bst, "getSortedFlights");
+            for (Flight f : flights) {
+                insertMethod.invoke(bst, f);
             }
-        }
-        try {
             @SuppressWarnings("unchecked")
             List<Flight> sorted = (List<Flight>) sortedMethod.invoke(bst);
-            return sorted;
-        } catch (ReflectiveOperationException ex) {
-            return loadFlightsFromDatabase();
+            return sorted != null ? sorted : new ArrayList<>(flights);
+        } catch (Exception ex) {
+            return new ArrayList<>(flights);
         }
+    }
+
+    /**
+     * Loads all flight records from the database ordered chronologically via
+     * the optional {@code ds.FlightBST} implementation.
+     *
+     * @return a list of flights sorted chronologically by military departure time
+     * @throws SQLException if a database access error occurs
+     */
+    public List<Flight> getSortedFlightsBST() throws SQLException {
+        List<Flight> dbFlights = loadFlightsFromDatabase();
+        return sortFlightsWithBST(dbFlights);
     }
 
     /**

@@ -191,6 +191,45 @@ public class PackagePanel extends JPanel implements ActionListener {
     }
 
     /**
+     * Sorts an in-memory list of package deals using {@code ds.PackageQuickSort} via reflection,
+     * falling back gracefully if the class or methods are unavailable.
+     *
+     * @param packages  the list of package deals to sort
+     * @param mode      the sorting criterion ("PRICE" or "RATING")
+     * @param ascending {@code true} for ascending order, {@code false} for descending order
+     */
+    public static void sortPackagesWithReflection(List<PackageDeal> packages, String mode, boolean ascending) {
+        if (packages == null || packages.isEmpty()) {
+            return;
+        }
+        try {
+            Class<?> quickSortClass;
+            try {
+                quickSortClass = Class.forName("ds.PackageQuickSort");
+            } catch (ClassNotFoundException ex) {
+                quickSortClass = Class.forName("ds.QuickSort");
+            }
+            if ("PRICE".equals(mode)) {
+                try {
+                    Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class, boolean.class);
+                    sortPriceMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
+                } catch (NoSuchMethodException e) {
+                    Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class);
+                    sortPriceMethod.invoke(null, packages, 0, packages.size() - 1);
+                }
+            } else if ("RATING".equals(mode)) {
+                try {
+                    Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class, boolean.class);
+                    sortRatingMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
+                } catch (NoSuchMethodException e) {
+                    Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class);
+                    sortRatingMethod.invoke(null, packages, 0, packages.size() - 1);
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    /**
      * Loads package deals and sorts them using {@code ds.PackageQuickSort} via reflection.
      *
      * @param mode      the sorting criterion ("PRICE" or "RATING")
@@ -199,34 +238,7 @@ public class PackagePanel extends JPanel implements ActionListener {
     public void loadPackagesQuickSort(String mode, boolean ascending) {
         packageModel.setRowCount(0);
         List<PackageDeal> packages = fetchAllPackages();
-
-        try {
-            Class<?> quickSortClass;
-            try {
-                quickSortClass = Class.forName("ds.PackageQuickSort");
-            } catch (ClassNotFoundException ex) {
-                quickSortClass = Class.forName("ds.QuickSort");
-            }
-            if (!packages.isEmpty()) {
-                if ("PRICE".equals(mode)) {
-                    try {
-                        Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class, boolean.class);
-                        sortPriceMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
-                    } catch (NoSuchMethodException e) {
-                        Method sortPriceMethod = quickSortClass.getMethod("sortByPrice", List.class, int.class, int.class);
-                        sortPriceMethod.invoke(null, packages, 0, packages.size() - 1);
-                    }
-                } else if ("RATING".equals(mode)) {
-                    try {
-                        Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class, boolean.class);
-                        sortRatingMethod.invoke(null, packages, 0, packages.size() - 1, ascending);
-                    } catch (NoSuchMethodException e) {
-                        Method sortRatingMethod = quickSortClass.getMethod("sortByRating", List.class, int.class, int.class);
-                        sortRatingMethod.invoke(null, packages, 0, packages.size() - 1);
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
+        sortPackagesWithReflection(packages, mode, ascending);
 
         for (PackageDeal pkg : packages) {
             packageModel.addRow(new Object[]{

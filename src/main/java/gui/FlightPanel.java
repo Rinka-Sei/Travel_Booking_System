@@ -262,66 +262,69 @@ public class FlightPanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Loads flight records from the database and orders them chronologically using {@code ds.FlightBST} via reflection.
-     * Falls back to direct database retrieval if {@code ds.FlightBST} is not available.
+     * Sorts an in-memory list of flights chronologically by departure time using {@code ds.FlightBST} via reflection,
+     * or returns the original list if {@code ds.FlightBST} is not available.
+     *
+     * @param flights the list of flights to sort
+     * @return the chronologically sorted flight list
      */
-    public void loadFlightsBST() {
-        flightModel.setRowCount(0);
-        boolean loadedViaBST = false;
-
+    public static List<Flight> sortFlightsWithReflection(List<Flight> flights) {
+        if (flights == null || flights.isEmpty()) {
+            return flights;
+        }
         try {
             Class<?> bstClass = Class.forName("ds.FlightBST");
             Object bstInstance = bstClass.getDeclaredConstructor().newInstance();
             Method insertMethod = bstClass.getMethod("insert", Flight.class);
             Method getSortedMethod = bstClass.getMethod("getSortedFlights");
 
-            try (Connection conn = DBConnection.getConnection();
-                 Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT * FROM flights")) {
-                while (rs.next()) {
-                    Flight f = new Flight(
-                            rs.getString("flight_id"),
-                            rs.getString("departure"),
-                            rs.getString("departure_time"),
-                            rs.getString("arrival"),
-                            rs.getString("arrival_time"),
-                            rs.getDouble("price")
-                    );
-                    insertMethod.invoke(bstInstance, f);
-                }
+            for (Flight f : flights) {
+                insertMethod.invoke(bstInstance, f);
             }
 
+            @SuppressWarnings("unchecked")
             List<Flight> sortedFlights = (List<Flight>) getSortedMethod.invoke(bstInstance);
-            for (Flight f : sortedFlights) {
-                flightModel.addRow(new Object[]{
-                        f.getFlightId(),
-                        f.getDeparture(),
-                        f.getDepartureTime(),
-                        f.getArrival(),
-                        f.getArrivalTime(),
-                        f.getPrice()
-                });
-            }
-            loadedViaBST = true;
-        } catch (Exception ignored) {}
+            return sortedFlights != null ? sortedFlights : flights;
+        } catch (Exception ignored) {
+            return flights;
+        }
+    }
 
-        if (!loadedViaBST) {
-            try (Connection conn = DBConnection.getConnection();
-                 Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT * FROM flights")) {
-                while (rs.next()) {
-                    flightModel.addRow(new Object[]{
-                            rs.getString("flight_id"),
-                            rs.getString("departure"),
-                            rs.getString("departure_time"),
-                            rs.getString("arrival"),
-                            rs.getString("arrival_time"),
-                            rs.getDouble("price")
-                    });
-                }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Error loading flights: " + ex.getMessage());
+    /**
+     * Loads flight records from the database and orders them chronologically using {@code ds.FlightBST} via reflection.
+     * Falls back to direct database retrieval if {@code ds.FlightBST} is not available.
+     */
+    public void loadFlightsBST() {
+        flightModel.setRowCount(0);
+        java.util.List<Flight> rawFlights = new java.util.ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM flights")) {
+            while (rs.next()) {
+                rawFlights.add(new Flight(
+                        rs.getString("flight_id"),
+                        rs.getString("departure"),
+                        rs.getString("departure_time"),
+                        rs.getString("arrival"),
+                        rs.getString("arrival_time"),
+                        rs.getDouble("price")
+                ));
             }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error loading flights: " + ex.getMessage());
+            return;
+        }
+
+        List<Flight> displayFlights = sortFlightsWithReflection(rawFlights);
+        for (Flight f : displayFlights) {
+            flightModel.addRow(new Object[]{
+                    f.getFlightId(),
+                    f.getDeparture(),
+                    f.getDepartureTime(),
+                    f.getArrival(),
+                    f.getArrivalTime(),
+                    f.getPrice()
+            });
         }
     }
 
