@@ -4,6 +4,40 @@ All notable changes, milestones, refactoring phases, and documentation updates f
 
 ---
 
+## [2026-11-03] - Service and GUI Reflection Decoupling Unit Tests
+
+### Added
+- **`FlightCatalogServiceTest.java`:** Added JUnit 5 unit tests verifying that in-memory flight lists are sorted chronologically via reflected `ds.FlightBST`.
+- **`CustomerRegistryServiceTest.java`:** Added JUnit 5 unit tests verifying user caching and retrieval via reflected `ds.CustomerHashTable`.
+- **`PackagePanelReflectionTest.java`:** Added JUnit 5 unit tests exercising `PackagePanel` reflection integration with `ds.PackageQuickSort` for price and rating sorting.
+- **`FlightPanelReflectionTest.java`:** Added JUnit 5 unit tests exercising `FlightPanel` reflection integration with `ds.FlightBST`.
+
+### Changed
+- **`FlightCatalogService.java`:** Added `sortFlightsWithBST(List<Flight>)` to decouple reflection execution from JDBC and enable direct unit testing.
+- **`CustomerRegistryService.java`:** Exposed `cacheUser(User)` and `getCachedUser(String)` methods to enable direct unit testing of reflected hash table caching without active database connectivity.
+- **`PackagePanel.java`:** Extracted static `sortPackagesWithReflection(List<PackageDeal>, String, boolean)` to enable direct unit testing of QuickSort reflection.
+- **`FlightPanel.java`:** Extracted static `sortFlightsWithReflection(List<Flight>)` to enable direct unit testing of FlightBST reflection.
+
+---
+
+## [2026-11-03] - Item 9 Compliance Audit and Refactor
+
+### Added
+- **`CustomerHashTable.java`:** Added the canonical Item 9 separate-chaining customer hash table API.
+- **`PackageQuickSort.java`:** Added the canonical Item 9 hand-written package sorting API with price and rating direction toggles.
+- **Booking Update Workflow:** Added `Update Selected` with booking row auto-fill and recalculated totals.
+- **JUnit 5 Tests:** Added focused tests for customer hash-table CRUD/collisions and package QuickSort ordering.
+
+### Changed
+- **Service Reflection:** Updated flight and customer services to use reflection for optional DSA integration with JDBC fallback behavior.
+- **Compatibility:** Retained `UserHashTable` and `QuickSort` as compatibility aliases for existing callers.
+- **`pom.xml`:** Added the required Java 21 compiler, Surefire, and Exec Maven plugin configuration.
+- **Database Seeding:** Removed the forbidden operational sample-data script so only the admin seed remains.
+- **Documentation:** Updated `README.md` to reflect the authoritative Item 9 architecture and live-seeding rule.
+
+### Fixed
+- **`QuickSort.sortHotelsByPrice(...)`:** Replaced the unfinished `UnsupportedOperationException` stub with a working sort implementation.
+
 ## [2026-10-30] - Master Prompt Blueprint Refinement & Multi-Project LLM Generation Guide
 
 ### Added

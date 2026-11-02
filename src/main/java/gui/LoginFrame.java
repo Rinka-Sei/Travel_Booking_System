@@ -12,7 +12,7 @@ import java.sql.*;
 /**
  * Login and registration view for authentication in the Travel Booking System.
  * Supports role-based authentication (ADMIN and CUSTOMER) and integrates
- * with {@code ds.UserHashTable} via Java reflection for decoupled caching.
+ * with {@code ds.CustomerHashTable} via Java reflection for decoupled caching.
  */
 public class LoginFrame extends JFrame implements ActionListener {
 
@@ -40,11 +40,16 @@ public class LoginFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Initializes reflection handles for {@code ds.UserHashTable} if available.
+     * Initializes reflection handles for {@code ds.CustomerHashTable} if available.
      */
     private void initHashTableReflection() {
         try {
-            Class<?> hashTableClass = Class.forName("ds.UserHashTable");
+            Class<?> hashTableClass;
+            try {
+                hashTableClass = Class.forName("ds.CustomerHashTable");
+            } catch (ClassNotFoundException ex) {
+                hashTableClass = Class.forName("ds.UserHashTable");
+            }
             userTableInstance = hashTableClass.getDeclaredConstructor(int.class).newInstance(20);
             hashTablePutMethod = hashTableClass.getMethod("put", String.class, User.class);
             hashTableGetMethod = hashTableClass.getMethod("get", String.class);
