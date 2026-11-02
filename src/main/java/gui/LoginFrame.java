@@ -44,17 +44,12 @@ public class LoginFrame extends JFrame implements ActionListener {
      */
     private void initHashTableReflection() {
         try {
-            Class<?> hashTableClass;
-            try {
-                hashTableClass = Class.forName("ds.CustomerHashTable");
-            } catch (ClassNotFoundException ex) {
-                hashTableClass = Class.forName("ds.UserHashTable");
-            }
+            Class<?> hashTableClass = Class.forName("ds.CustomerHashTable");
             userTableInstance = hashTableClass.getDeclaredConstructor(int.class).newInstance(20);
             hashTablePutMethod = hashTableClass.getMethod("put", String.class, User.class);
             hashTableGetMethod = hashTableClass.getMethod("get", String.class);
         } catch (Exception ignored) {
-            // UserHashTable is optional / decoupled
+            // CustomerHashTable is optional / decoupled
         }
     }
 

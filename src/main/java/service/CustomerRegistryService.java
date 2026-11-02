@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service layer coordinating User and Customer registration, authentication, and caching via {@code ds.UserHashTable}.
+ * Service layer coordinating User and Customer registration, authentication, and caching via {@code ds.CustomerHashTable}.
  * Mirrors the {@code CustomerRegistry} service architecture from the starter project blueprint.
  */
 public class CustomerRegistryService {
