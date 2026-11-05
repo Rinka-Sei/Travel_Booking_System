@@ -2,9 +2,7 @@
 
 This document dictates the required structure and content formatting for the `README.md` and `CHANGELOG.md` files. Any LLM or AI Agent completing a feature must generate or update these files according to these templates.
 
-[![View Api Docs](https://img.shields.io/badge/View-Interactive%20Guide-blue?style=for-the-badge)](https://rinka-sei.github.io/dsa_travel_booking_system)
-
-Hosted interactive API documentation and architectural guide: [https://rinka-sei.github.io/dsa_travel_booking_system](https://rinka-sei.github.io/dsa_travel_booking_system)
+note: the documentation link (API DOCS) must be entered explicitly in chat by the user.
 
 ---
 
@@ -17,6 +15,9 @@ Every project generated MUST include a `README.md` following this exact structur
     A brief 1-2 sentence summary of the system, its purpose, and the core DSA implemented.
 
     ---
+
+    [![VIEW API DOCS](https://img.shields.io/badge/View-API%20Docs-blue?style=for-the-badge)](https://<github-username>.github.io/<project_repository>)  
+    Hosted interactive API documentation and architectural guide: [https://<github-username>.github.io/<project_repository>](https://<github-username>.github.io/<project_repository>) 
 
     ## 🚀 Key Functional Features
     - **[Feature 1]:** Brief description (e.g., "Complete CRUD for all entities").
