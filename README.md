@@ -8,7 +8,7 @@ a customer hash table, and hand-written package QuickSort.
 
 [![VIEW API DOCS](https://img.shields.io/badge/View-API%20Docs-blue?style=for-the-badge)](https://rinka-sei.github.io/Travel_Booking_System/)
 
-Hosted interactive API documentation and architectural guide: [https://rinka-sei.github.io/dsa_travel_booking_system](https://rinka-sei.github.io/Travel_Booking_System/)
+Hosted interactive API documentation and architectural guide: [https://rinka-sei.github.io/Travel_Booking_System/](https://rinka-sei.github.io/Travel_Booking_System/)
 
 ## 🚀 Key Functional Features
 
