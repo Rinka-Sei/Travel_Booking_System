@@ -12,6 +12,11 @@ import java.sql.*;
 /**
  * Panel view for managing customer bookings, itineraries, and printable invoices.
  * Supports booking creation with destination matching verification, cancellation, itinerary summaries, and invoice generation.
+ * <p>
+ * The administrative "Report" action is restricted to accounts whose current role is
+ * {@code ADMIN}; non-admin sessions never see or trigger the report control. Role gating
+ * follows the same {@code boolean isAdmin} pattern used in {@code FlightPanel}.
+ * </p>
  */
 public class BookingPanel extends JPanel implements ActionListener {
 
@@ -25,17 +30,26 @@ public class BookingPanel extends JPanel implements ActionListener {
     private JButton btnCancel;
     private JTable tblBookings;
     private DefaultTableModel bookingModel;
-    private MainFrame parentFrame;
+    private MainFrame parent;
 
     /**
      * Constructs the BookingPanel view and initializes its controls and table.
+     * <p>
+     * The "Report" button is only created and added to the panel when the
+     * logged-in account has the {@code ADMIN} role, using the same
+     * {@code boolean isAdmin} gating pattern applied throughout the GUI layer.
+     * For all other roles the control is omitted entirely so the administrative
+     * report cannot be reached from the Bookings &amp; Itinerary tab.
+     * </p>
      *
      * @param parent the parent {@link MainFrame} dashboard container
      */
     public BookingPanel(MainFrame parent) {
-        this.parentFrame = parent;
+        this.parent = parent;
         setLayout(null);
         setBounds(0, 0, 900, 580);
+
+        boolean isAdmin = "ADMIN".equals(parent.getCurrentRole());
 
         JLabel lblFlightId = new JLabel("Flight ID:");
         lblFlightId.setBounds(10, 10, 60, 25);
@@ -73,10 +87,12 @@ public class BookingPanel extends JPanel implements ActionListener {
         btnInvoice.addActionListener(this);
         add(btnInvoice);
 
-        btnReport = new JButton("Report");
-        btnReport.setBounds(785, 10, 90, 25);
-        btnReport.addActionListener(this);
-        add(btnReport);
+        if (isAdmin) {
+            btnReport = new JButton("Report");
+            btnReport.setBounds(785, 10, 90, 25);
+            btnReport.addActionListener(this);
+            add(btnReport);
+        }
 
         btnCancel = new JButton("Cancel");
         btnCancel.setBounds(10, 45, 90, 25);
@@ -114,7 +130,7 @@ public class BookingPanel extends JPanel implements ActionListener {
             generateItinerary();
         } else if (e.getSource() == btnInvoice) {
             generateInvoice();
-        } else if (e.getSource() == btnReport) {
+        } else if (btnReport != null && e.getSource() == btnReport) {
             generateSystemReport();
         } else if (e.getSource() == btnCancel) {
             cancelBooking();
@@ -179,7 +195,7 @@ public class BookingPanel extends JPanel implements ActionListener {
             double total = flightPrice + hotelPrice;
 
             PreparedStatement psInsert = conn.prepareStatement("INSERT INTO bookings(username, flight_id, hotel_id, total_price) VALUES(?, ?, ?, ?)");
-            psInsert.setString(1, parentFrame.getCurrentUser());
+            psInsert.setString(1, parent.getCurrentUser());
             psInsert.setString(2, fId.isEmpty() ? null : fId);
             psInsert.setString(3, hId.isEmpty() ? null : hId);
             psInsert.setDouble(4, total);
@@ -203,8 +219,8 @@ public class BookingPanel extends JPanel implements ActionListener {
     public void loadBookings() {
         bookingModel.setRowCount(0);
         try (Connection conn = DBConnection.getConnection()) {
-            String role = parentFrame.getCurrentRole();
-            String user = parentFrame.getCurrentUser();
+            String role = parent.getCurrentRole();
+            String user = parent.getCurrentUser();
             String query = "ADMIN".equals(role) ? "SELECT * FROM bookings" : "SELECT * FROM bookings WHERE username = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             if (!"ADMIN".equals(role)) {
@@ -386,8 +402,17 @@ public class BookingPanel extends JPanel implements ActionListener {
 
     /**
      * Generates and displays an executive administrative activity and revenue report.
+     * <p>
+     * Defensive role re-check: even if the control were somehow reached by a
+     * non-admin session, the report is refused before touching the service layer.
+     * </p>
      */
     private void generateSystemReport() {
+        if (!"ADMIN".equals(parent.getCurrentRole())) {
+            JOptionPane.showMessageDialog(this, "Access denied. Only administrators may generate system reports.",
+                    "Access Denied", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         try {
             service.BookingManagementService bookingService = new service.BookingManagementService();
             String reportText = bookingService.generateSystemSummaryReport();
