@@ -4,6 +4,19 @@ All notable changes, milestones, refactoring phases, and documentation updates f
 
 ---
 
+## [2026-11-06] - Automated JavaDoc Deployment & Admin-Only Report Access
+
+### Added
+- **Systemd Automation (`systemd/`):** Added a systemd service and timer on the local Omarchy server to automate JavaDoc generation and GitHub Pages deployment for `dsa_travel_booking_system-nightly` and its downstream mirror `dsa_travel_booking_system-beta`.
+- **GitHub Pages Publishing (`gh-pages`):** Configured an orphaned `gh-pages` branch in both repositories to host the generated API documentation.
+- **Admin-Only Report Access (`BookingPanel.java`):** Restricted the `Report` button on the `Bookings & Itinerary` tab so it is visible and actionable only for accounts with the `ADMIN` role.
+
+### Changed
+- **Repository Naming:** Renamed the projects to `dsa_travel_booking_system-nightly` and `dsa_travel_booking_system-beta`, and updated the corresponding `pom.xml` `<artifactId>` values to match.
+
+### Fixed
+- **`database/02_customers.sql`:** Confirmed removal of the operational sample-data script; only `database/01_admin.sql` remains, per the admin-only seeding rule.
+
 ## [2026-11-03] - Service and GUI Reflection Decoupling Unit Tests
 
 ### Added
