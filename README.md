@@ -1,8 +1,6 @@
 # Travel Booking System (Java) — Group 9 Framework
 
-An educational Java Swing travel-booking system for managing flights, hotels,
-package deals, and bookings. It demonstrates JDBC persistence, a flight BST,
-a customer hash table, and hand-written package QuickSort.
+An educational Java Swing travel-booking system for managing flights, hotels, package deals, and bookings. It demonstrates JDBC persistence, a flight BST, a customer hash table, and a hand-written package QuickSort.
 
 ---
 
@@ -12,65 +10,61 @@ Hosted interactive API documentation and architectural guide: [https://rinka-sei
 
 ## 🚀 Key Functional Features
 
-- **Flight and Hotel CRUD:** Admin users can add, update, delete, search, and
-  sort travel listings.
-- **Package Deal Sorting:** Destination-matched flight and hotel packages can
-  be sorted by price or rating with toggleable QuickSort direction.
-- **Booking Management:** Customers can create, update, cancel, inspect
-  itineraries, and generate invoices for bookings.
-- **DSA and Reflection Integration:** `FlightBST`, `CustomerHashTable`, and
-  `PackageQuickSort` are wired through the service/GUI layers with JDBC
-  fallback behavior.
-- **Enterprise Documentation and Tests:** Source classes include JavaDoc and
-  custom DSA behavior is covered by JUnit 5 tests.
+- **Flight and Hotel CRUD:** Admin users can add, update, delete, search, and sort travel listings with table-selection auto-fill.
+- **Package Deal Sorting:** Destination-matched flight and hotel packages can be sorted by price or rating with toggleable QuickSort direction.
+- **Booking Management:** Customers can create, update, cancel, inspect itineraries, and generate invoices for bookings.
+- **Admin-Only Reporting:** The executive report on the `Bookings & Itinerary` tab is restricted to accounts with the `ADMIN` role.
+- **DSA and Reflection Integration:** `FlightBST`, `CustomerHashTable`, and `PackageQuickSort` are wired through the service and GUI layers with JDBC fallback behavior.
+- **Enterprise Documentation:** Source classes include JavaDoc; custom DSA behavior is covered by JUnit 5 tests in the upstream nightly repository.
 
 ---
 
 ## 📐 Modular Package Structure
 
-```text
-dsa_travel_booking_system/
-├── src/
-│   ├── main/java/
-│   │   ├── database/DBConnection.java
-│   │   ├── ds/
-│   │   │   ├── CustomerHashTable.java
-│   │   │   ├── FlightBST.java (Work-In-Progress)
-│   │   │   └── PackageQuickSort.java (Work-In-Progress)
-│   │   ├── gui/
-│   │   │   ├── LoginFrame.java
-│   │   │   ├── MainFrame.java
-│   │   │   ├── FlightPanel.java
-│   │   │   ├── HotelPanel.java
-│   │   │   ├── PackagePanel.java
-│   │   │   └── BookingPanel.java
-│   │   ├── model/
-│   │   ├── service/
-│   │   └── Main.java
-│   └── test/java/ds/
-├── database/
-│   └── 01_admin.sql
-├── pom.xml
-├── README.md
-└── CHANGELOG.md
-```
+    dsa_travel_booking_system-beta/
+    ├── database/
+    │   └── 01_admin.sql
+    ├── src/
+    │   └── main/
+    │       └── java/
+    │           ├── database/
+    │           │   └── DBConnection.java
+    │           ├── ds/
+    │           │   ├── CustomerHashTable.java
+    │           │   ├── FlightBST.java
+    │           │   └── PackageQuickSort.java
+    │           ├── gui/
+    │           │   ├── BookingPanel.java
+    │           │   ├── FlightPanel.java
+    │           │   ├── HotelPanel.java
+    │           │   ├── LoginFrame.java
+    │           │   ├── MainFrame.java
+    │           │   └── PackagePanel.java
+    │           ├── model/
+    │           │   ├── Booking.java
+    │           │   ├── Flight.java
+    │           │   ├── Hotel.java
+    │           │   ├── PackageDeal.java
+    │           │   └── User.java
+    │           ├── service/
+    │           │   ├── BookingManagementService.java
+    │           │   ├── CustomerRegistryService.java
+    │           │   └── FlightCatalogService.java
+    │           └── Main.java
+    ├── .gitignore
+    ├── CHANGELOG.md
+    ├── LICENSE
+    ├── nbactions.xml
+    ├── pom.xml
+    └── README.md
 
 ---
 
 ## 📜 Strict Professor Rule Compliance
 
-1. **Absolute Layout Positioning (`setLayout(null)`):** Every frame and panel
-   uses explicit coordinate layout and `setBounds(...)`; no visual GUI builder
-   is used.
-2. **Zero External Libraries:** Runtime code uses standard JDK APIs plus
-   `mysql-connector-j`; JUnit 5 is the only test dependency.
-3. **GUI Live-Seeding Rule:** `database/01_admin.sql` creates the schema and
-   pre-seeds only `admin` / `admin123`. No operational flights, hotels,
-   customers, or bookings are pre-seeded, and no `02_*.sql` sample-data script
-   is included.
-4. **CRUD and DSA:** Flight, hotel, and booking workflows include update
-   support with table-selection auto-fill; the required Item 9 DSA classes are
-   hand-written and service reflection has JDBC fallback behavior.
+1. **Absolute Layout Positioning (`setLayout(null)`):** Every frame and panel uses explicit coordinate layout (`setLayout(null)`) and manual component placement via `setBounds(x, y, width, height)`. No visual GUI builders are used.
+2. **Zero External Libraries (JDBC Connector Only):** Relies solely on standard JDK 21+ APIs and `mysql-connector-j` as the sole external dependency. JUnit 5 is the only test dependency.
+3. **GUI Live-Seeding Rule:** Database setup scripts are located in the root `database/` directory (`database/01_admin.sql` pre-seeding default admin `admin` / `admin123`). No operational flights, hotels, customers, or bookings are pre-seeded, and no `02_*.sql` sample-data script is included.
 
 ---
 
@@ -78,22 +72,20 @@ dsa_travel_booking_system/
 
 ### Database Setup Scripts
 
-```bash
-mysql -u root < database/01_admin.sql
-```
+Execute `database/01_admin.sql` to initialize the schema and seed the admin user:
+
+    mysql -u root < database/01_admin.sql
 
 ### Build & Run Commands
 
-```bash
-# Compile project
-mvn compile
+    # Compile project
+    mvn compile
 
-# Launch application
-mvn exec:java
+    # Launch application
+    mvn exec:java
 
-# Run JUnit 5 unit test suite
-mvn test
-```
+    # Run JUnit 5 unit test suite (tests live in the nightly repository)
+    mvn test
 
 ---
 
